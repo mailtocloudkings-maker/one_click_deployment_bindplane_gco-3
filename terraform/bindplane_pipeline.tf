@@ -10,6 +10,10 @@ provider "bindplane" {
 # SOURCES
 ################################
 resource "bindplane_source" "host_metrics" {
+  depends_on = [
+    google_compute_instance.bindplane_control
+  ]
+
   rollout = true
   name    = "host-metrics-${random_id.suffix.hex}"
   type    = "host"
@@ -27,6 +31,10 @@ resource "bindplane_source" "host_metrics" {
 }
 
 resource "bindplane_source" "journald_logs" {
+  depends_on = [
+    google_compute_instance.bindplane_control
+  ]
+
   rollout = true
   name    = "journald-logs-${random_id.suffix.hex}"
   type    = "journald"
@@ -36,6 +44,10 @@ resource "bindplane_source" "journald_logs" {
 # PROCESSORS
 ################################
 resource "bindplane_processor" "batch" {
+  depends_on = [
+    google_compute_instance.bindplane_control
+  ]
+
   rollout = true
   name    = "batch-${random_id.suffix.hex}"
   type    = "batch"
@@ -60,6 +72,11 @@ resource "bindplane_processor" "batch" {
 # LOGS CONFIGURATION
 ################################
 resource "bindplane_configuration" "logs_config" {
+  depends_on = [
+    bindplane_source.journald_logs,
+    bindplane_processor.batch
+  ]
+
   rollout  = true
   name     = "vm-logs-${random_id.suffix.hex}"
   platform = "linux"
@@ -83,6 +100,11 @@ resource "bindplane_configuration" "logs_config" {
 # METRICS CONFIGURATION
 ################################
 resource "bindplane_configuration" "metrics_config" {
+  depends_on = [
+    bindplane_source.host_metrics,
+    bindplane_processor.batch
+  ]
+
   rollout  = true
   name     = "vm-metrics-${random_id.suffix.hex}"
   platform = "linux"
