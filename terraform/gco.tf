@@ -1,5 +1,5 @@
-resource "google_logging_project_sink" "gcs_sink" {
-  name        = "bindplane-sink-${random_id.suffix.hex}"
-  destination = "storage.googleapis.com/${google_storage_bucket.logs.name}"
-  filter      = "resource.type=gce_instance"
+resource "google_storage_bucket_object" "example" {
+  name   = "example-object-${random_id.suffix.hex}"
+  bucket = google_storage_bucket.bindplane_bucket.name
+  source = "local-file.txt"
 }
