@@ -1,12 +1,32 @@
+# ------------------------
+# GCP Configuration
+# ------------------------
 project_id = "my-gcp-project"
-region = "us-central1"
-zone = "us-central1-a"
+region     = "us-central1"
+zone       = "us-central1-a"
+
+# ------------------------
+# Alerting
+# ------------------------
 alert_email = "alerts@mydomain.com"
+
+# ------------------------
+# BindPlane API (generated later by GitHub Actions)
+# ------------------------
 bindplane_api_key = "YOUR_BINDPLANE_API_KEY"
 
-db_user = "bindplane_user"
+# ------------------------
+# Cloud SQL (PostgreSQL)
+# ------------------------
+db_user     = "bindplane"
 db_password = "StrongPassword@2026"
 
-bindplane_admin_user = "admin"
+# ------------------------
+# BindPlane Server
+# ------------------------
 bindplane_admin_password = "StrongPassword@2026"
-bindplane_license = "YOUR_LICENSE_KEY"
+
+# License key (base64, multi-line allowed)
+bindplane_license = <<EOF
+YOUR_LICENSE_KEY
+EOF
