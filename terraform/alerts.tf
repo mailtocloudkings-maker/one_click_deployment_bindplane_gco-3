@@ -1,37 +1,16 @@
-resource "google_monitoring_notification_channel" "email" {
-  display_name = "bindplane-alert-email"
-  type         = "email"
+resource "google_monitoring_alert_policy" "bindplane_alerts" {
+  display_name = "bindplane-alerts-${random_id.suffix.hex}"
 
-  labels = {
-    email_address = var.alert_email
-  }
-}
-
-resource "google_monitoring_alert_policy" "cpu" {
-  display_name = "BindPlane High CPU"
-  combiner     = "OR"
-
+  combiner = "OR"
   conditions {
-    display_name = "CPU Utilization > 80%"
-
+    display_name = "CPU usage high"
     condition_threshold {
-      filter = <<EOT
-resource.type="gce_instance"
-AND metric.type="compute.googleapis.com/instance/cpu/utilization"
-EOT
-
-      comparison      = "COMPARISON_GT"
+      filter = "metric.type=\"compute.googleapis.com/instance/cpu/utilization\""
+      comparison = "COMPARISON_GT"
       threshold_value = 0.8
-      duration        = "300s"
-
-      aggregations {
-        alignment_period   = "60s"
-        per_series_aligner = "ALIGN_MEAN"
-      }
+      duration = "60s"
     }
   }
 
-  notification_channels = [
-    google_monitoring_notification_channel.email.id
-  ]
+  notification_channels = [var.alert_email]
 }
