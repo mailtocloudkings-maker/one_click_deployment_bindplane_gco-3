@@ -3,28 +3,15 @@ set -e
 LOG=/var/log/bindplane-startup.log
 exec > >(tee -a $LOG) 2>&1
 
-BP_BIN="/usr/local/bin/bindplane"
-
-# Install dependencies
+# OS packages
 apt-get update -y
 apt-get install -y curl postgresql-client
 
-# Install Bindplane
-curl -fsSL https://storage.googleapis.com/bindplane-op-releases/bindplane/latest/install-linux.sh -o /tmp/install-bindplane.sh
-chmod +x /tmp/install-bindplane.sh
-/tmp/install-bindplane.sh
-
-# Configure Bindplane
+# Create config directory
 mkdir -p /etc/bindplane
+
 cat <<EOF > /etc/bindplane/config.yaml
 apiVersion: bindplane.observiq.com/v1
-
-eula:
-  accepted: "2023-05-30"
-
-license: |
-  ${license_key}
-
 env: production
 
 network:
@@ -34,27 +21,34 @@ network:
 admin:
   auth:
     type: system
-    username: ${admin_user}
-    password: ${admin_pass}
-    sessionSecret: $(uuidgen)
+    username: "${bindplane_admin_user}"
+    password: "${bindplane_admin_password}"
+    sessionSecret: "$(uuidgen)"
 
 store:
   type: postgres
   postgres:
-    host: ${db_host}
+    host: "${google_sql_database_instance.bindplane_postgres.ip_address[0].ip_address}"
     port: "5432"
-    database: ${db_name}
-    username: ${db_user}
-    password: ${db_pass}
+    database: bindplane
+    username: "${db_user}"
+    password: "${db_password}"
     sslmode: disable
     schema: public
+
+license: |
+  ${bindplane_license}
 EOF
 
-chown -R bindplane:bindplane /etc/bindplane
-chmod 600 /etc/bindplane/config.yaml
+# Download & install Bindplane
+curl -fsSL https://storage.googleapis.com/bindplane-op-releases/bindplane/latest/install-linux.sh -o /tmp/install-bindplane.sh
+chmod +x /tmp/install-bindplane.sh
+/tmp/install-bindplane.sh
 
-# Init server
-sudo -u bindplane $BP_BIN init server --accept-eula --config /etc/bindplane/config.yaml
+# Initialize Bindplane server non-interactively
+bindplane init server --accept-eula --config /etc/bindplane/config.yaml
 
+# Enable & start service
+systemctl daemon-reload
 systemctl enable bindplane
 systemctl restart bindplane
