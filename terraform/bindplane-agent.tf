@@ -1,5 +1,19 @@
-#!/bin/bash
-set -e
-curl -fsSL https://storage.googleapis.com/bindplane-op-releases/bindplane-agent/latest/install.sh -o /tmp/install-agent.sh
-chmod +x /tmp/install-agent.sh
-/tmp/install-agent.sh --server-url http://<BINDPLANE_VM_IP>:3001 --api-key ${bindplane_api_key}
+resource "google_compute_instance" "bindplane_agent" {
+  name         = "bindplane-agent-${random_id.suffix.hex}"
+  machine_type = "e2-small"
+  zone         = var.zone
+
+  boot_disk {
+    initialize_params {
+      image = "ubuntu-os-cloud/ubuntu-2204-lts"
+      size  = 50
+    }
+  }
+
+  network_interface {
+    network = "default"
+    access_config {}
+  }
+
+  metadata_startup_script = file("bindplane-agent-startup.sh")
+}
