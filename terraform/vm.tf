@@ -16,13 +16,5 @@ resource "google_compute_instance" "bindplane_control" {
     access_config {}
   }
 
-  metadata_startup_script = templatefile("${path.module}/startup.sh", {
-    db_host     = google_sql_database_instance.bindplane_postgres.ip_address[0].ip_address
-    db_name     = google_sql_database.bindplane.name
-    db_user     = var.db_user
-    db_pass     = var.db_password
-    admin_user  = var.bindplane_admin_user
-    admin_pass  = var.bindplane_admin_password
-    license_key = var.bindplane_license
-  })
+  metadata_startup_script = file("startup.sh")
 }
