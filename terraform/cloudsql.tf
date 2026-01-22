@@ -1,36 +1,27 @@
-resource "random_id" "suffix" {
-  byte_length = 3
-}
-
-resource "google_sql_database_instance" "bindplane_postgres" {
-  name             = "bindplane-db-${random_id.suffix.hex}"
+resource "google_sql_database_instance" "bindplane" {
+  name             = "bindplane-db-${local.name_suffix}"
   database_version = "POSTGRES_15"
   region           = var.region
 
   settings {
-    tier = "db-f1-micro"
-    disk_size = 50
+    tier = "db-custom-1-3840"
 
     ip_configuration {
-      ipv4_enabled    = true
+      ipv4_enabled = true
       authorized_networks {
-        value = "0.0.0.0/0"  # restrict later
+        value = "0.0.0.0/0"
       }
-    }
-
-    backup_configuration {
-      enabled = true
     }
   }
 }
 
 resource "google_sql_database" "bindplane" {
   name     = "bindplane"
-  instance = google_sql_database_instance.bindplane_postgres.name
+  instance = google_sql_database_instance.bindplane.name
 }
 
-resource "google_sql_user" "bindplane_user" {
+resource "google_sql_user" "bindplane" {
   name     = var.db_user
-  instance = google_sql_database_instance.bindplane_postgres.name
+  instance = google_sql_database_instance.bindplane.name
   password = var.db_password
 }
